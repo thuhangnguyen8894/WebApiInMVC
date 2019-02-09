@@ -18,5 +18,42 @@ namespace Mvc.Controllers
             empList = response.Content.ReadAsAsync<IEnumerable<mvcEmployeeModel>>().Result;
             return View(empList);
         }
+        public ActionResult AddOrEdit(int id = 0)
+        {
+            if (id == 0)
+            {
+                return View(new mvcEmployeeModel());
+            }
+            else
+            {
+                HttpResponseMessage response = GlobalVariables.WebApiClient.GetAsync("Employees/" + id.ToString()).Result;
+                return View(response.Content.ReadAsAsync<mvcEmployeeModel>().Result);
+            }
+        }
+        [HttpPost] //call Web API
+        public ActionResult AddOrEdit(mvcEmployeeModel emp)
+        {
+            if(emp.EmployedID == 0)
+            {
+                //call PostEmployee(Employee employee)
+                HttpResponseMessage response = GlobalVariables.WebApiClient.PostAsJsonAsync("Employees", emp).Result;
+                TempData["SuccessMessage"] = "Saved Successfully";
+            }
+            else
+            {
+                //call PutEmployee(int id, Employee employee)
+                HttpResponseMessage response = GlobalVariables.WebApiClient.PutAsJsonAsync("Employees/"+emp.EmployedID, emp).Result;
+                TempData["SuccessMessage"] = "Updated Successfully";
+            }
+            return RedirectToAction("Index");
+        }
+
+        public ActionResult Delete(int id)
+        {
+            //call DeleteEmployee(int id)
+            HttpResponseMessage response = GlobalVariables.WebApiClient.DeleteAsync("Employees/" + id.ToString()).Result;
+            TempData["SuccessMessage"] = "Deleted Successfully";
+            return RedirectToAction("Index");
+        }
     }
 }
